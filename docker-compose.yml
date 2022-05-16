@@ -1,0 +1,44 @@
+version: '3.8'
+
+networks:
+  devops:
+    name: devops
+    driver: bridge
+
+services:
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    hostname: nginx
+    ports:
+      - '80:80'
+    depends_on:
+      - nodejs-app
+      - redis
+    networks:
+      - devops
+
+  redis:
+    container_name: redis
+    image: 'bitnami/redis:latest'
+    ports:
+      - '6379:6379'
+    environment:
+      ALLOW_EMPTY_PASSWORD: yes
+      REDIS_PORT_NUMBER: 6379
+    networks:
+      - devops
+
+  nodejs-app:
+    build: .
+    container_name: nodejsserver
+    hostname: nodejsserver
+    ports:
+      - '3064:3064'
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - devops
